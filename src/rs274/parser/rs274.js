@@ -1048,7 +1048,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = new TreeNode9(this._input.substring(index1, this._offset), index1, elements0);
+        address0 = this._actions.makeSetParameterValue(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._parameter_setting[index0] = [address0, this._offset];
@@ -1204,7 +1204,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = new TreeNode(this._input.substring(index1, this._offset), index1, elements0);
+        address0 = this._actions.makeComment(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._ordinary_comment[index0] = [address0, this._offset];
@@ -1456,7 +1456,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = new TreeNode11(this._input.substring(index1, this._offset), index1, elements0);
+        address0 = this._actions.makeMessage(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._message[index0] = [address0, this._offset];

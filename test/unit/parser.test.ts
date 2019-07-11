@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import { parseLine } from '../../src/rs274/parser';
+import { parseLine } from '../../src/rs274/parser/parser';
 
 describe('Testing parser actions', (): void => {
   describe('Line Structure', (): void => {

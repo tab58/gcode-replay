@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { createReadStream } from 'fs';
 import { createInterface } from 'readline';
 
-import { parseLine } from './rs274/parser';
+import { parseLine } from './rs274/parser/parser';
 
 const argv = minimist(process.argv.slice(2));
 const argFilepath = argv._[0];

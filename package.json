@@ -8,7 +8,7 @@
     "test": "npm run test:unit",
     "test:unit": "mocha -r ts-node/register test/unit/*.test.ts",
     "trial": "npm start -- ../test/sled-0.25-in.nc",
-    "build:parser": "./node_modules/.bin/canopy ./src/rs274/rs274.peg --lang js",
+    "build:parser": "./node_modules/.bin/canopy ./src/rs274/parser/rs274.peg --lang js",
     "inspect:test:unit": "mocha --inspect-brk -r ts-node/register test/unit/*.test.ts"
   },
   "keywords": [

@@ -13,11 +13,11 @@ grammar RS274Line
   arc_tangent_combo <- "atan" expression "/" expression %makeArcTangentCombo
   expression <- "[" real_value ( binary_operation_combo )* "]" %makeExpression
 
-  parameter_setting <- "#" real_value "=" real_value
+  parameter_setting <- "#" real_value "=" real_value %makeSetParameterValue
   binary_operation_combo <- ( binary_operation1 / binary_operation2 / binary_operation3 ) real_value %makeBinaryOperationCombo
   comment <- (message / ordinary_comment)
-  ordinary_comment <- "(" (comment_character)* ")"
-  message <- "(" ( white_space )* [Mm] ( white_space )* [Ss] ( white_space )* [Gg] ( white_space )* comma ( comment_character )* ")"
+  ordinary_comment <- "(" (comment_character)* ")" %makeComment
+  message <- "(" ( white_space )* [Mm] ( white_space )* [Ss] ( white_space )* [Gg] ( white_space )* comma ( comment_character )* ")" %makeMessage
 
   ordinary_unary_operation <- "abs" / "acos" / "asin" / "cos" / "exp" / "fix" / "fup" / "ln" / "round" / "sin" / "sqrt" / "tan"
   binary_operation1 <- "**" %makeBinOp
