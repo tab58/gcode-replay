@@ -226,7 +226,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_line(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeLine(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._line[index0] = [address0, this._offset];
@@ -329,7 +329,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_line_number(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeLineNumber(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._line_number[index0] = [address0, this._offset];
@@ -418,7 +418,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_mid_line_word(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeMidLineWord(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._mid_line_word[index0] = [address0, this._offset];
@@ -679,7 +679,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_real_number(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeRealNumber(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._real_number[index0] = [address0, this._offset];
@@ -730,7 +730,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_get_parameter_value(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeGetParameterValue(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._parameter_value[index0] = [address0, this._offset];
@@ -786,7 +786,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_ordinary_unary_combo(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeOrdinaryUnaryCombo(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._ordinary_unary_combo[index0] = [address0, this._offset];
@@ -869,7 +869,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_arc_tangent_combo(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeArcTangentCombo(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._arc_tangent_combo[index0] = [address0, this._offset];
@@ -965,7 +965,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_expression(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeExpression(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._expression[index0] = [address0, this._offset];
@@ -1095,7 +1095,7 @@
       if (elements0 === null) {
         address0 = FAILURE;
       } else {
-        address0 = this._actions.make_binary_operation_combo(this._input, index1, this._offset, elements0);
+        address0 = this._actions.makeBinaryOperationCombo(this._input, index1, this._offset, elements0);
         this._offset = this._offset;
       }
       this._cache._binary_operation_combo[index0] = [address0, this._offset];
@@ -1729,7 +1729,7 @@
         chunk0 = this._input.substring(this._offset, this._offset + 2);
       }
       if (chunk0 === '**') {
-        address0 = this._actions.make_bin_op(this._input, this._offset, this._offset + 2);
+        address0 = this._actions.makeBinOp(this._input, this._offset, this._offset + 2);
         this._offset = this._offset + 2;
       } else {
         address0 = FAILURE;
@@ -1797,7 +1797,7 @@
             chunk2 = this._input.substring(this._offset, this._offset + 1);
           }
           if (chunk2 === '*') {
-            address0 = this._actions.make_bin_op(this._input, this._offset, this._offset + 1);
+            address0 = this._actions.makeBinOp(this._input, this._offset, this._offset + 1);
             this._offset = this._offset + 1;
           } else {
             address0 = FAILURE;
@@ -1908,7 +1908,7 @@
                 chunk4 = this._input.substring(this._offset, this._offset + 1);
               }
               if (chunk4 === '+') {
-                address0 = this._actions.make_bin_op(this._input, this._offset, this._offset + 1);
+                address0 = this._actions.makeBinOp(this._input, this._offset, this._offset + 1);
                 this._offset = this._offset + 1;
               } else {
                 address0 = FAILURE;

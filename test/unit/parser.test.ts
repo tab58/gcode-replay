@@ -1,41 +1,32 @@
 import { expect } from 'chai';
 
-import * as actions from '../../src/parser/actions';
-import { parse } from '../../src/parser/rs274';
-
-const parserActions: { actions: { [key: string]: any } } = { actions };
+import { parseLine } from '../../src/rs274/parser';
 
 describe('Testing parser actions', (): void => {
   describe('Line Structure', (): void => {
     it('should parse block deletes', (): void => {
       const line = '/N00001G3X0.5Y0.5(hello world)Z0.5\n';
-      const { blockDelete } = parse(line, parserActions);
-      // console.log(blockDelete);
-      expect(blockDelete.text).to.be.equal("/");
-      expect(blockDelete.offset).to.be.equal(0);
-      expect(blockDelete.elements).to.be.deep.equal([]);
+      const { blockDelete } = parseLine(line);
+      expect(blockDelete).to.not.be.undefined;
+      expect(blockDelete.value).to.be.true;
     });
     it('should parse line numbers', (): void => {
       const line = '/N00001G3X0.5Y0.5(hello world)Z0.5';
-      const { lineNumber } = parse(line, parserActions);
+      const { lineNumber } = parseLine(line);
       expect(lineNumber.line).to.be.equal(1);
 
       const line2 = '/G3X0.5Y0.5(hello world)Z0.5';
-      const parsed: any = parse(line2, parserActions);
+      const parsed: any = parseLine(line2);
       const { lineNumber: lineNo2 } = parsed;
       // console.log(parsed);
       expect(lineNo2).to.be.null;
-    });
-    it('should parse EOLs', (): void => {
-
     });
   });
   describe('Block Tests', (): void => {
     it('should parse pure unary expressions', (): void => {
       const line = 'G3X[ln[cos[3]]]';
       debugger;
-      const parsed: any = parse(line, parserActions);
-
+      const parsed: any = parseLine(line);
       const exprNode = parsed.segments[1].value;
       const expected = {
         "type": "expression",
@@ -56,6 +47,68 @@ describe('Testing parser actions', (): void => {
               }
             }
           }
+        }
+      };
+      expect(exprNode).to.be.deep.equal(expected);
+    });
+    it('should parse pure binary expressions', (): void => {
+      const line = 'G3X[2+3/5-7*9]';
+      debugger;
+      const parsed: any = parseLine(line);
+      const exprNode = parsed.segments[1].value;
+      const expected = {
+        "type": "expression",
+        "value": {
+          "leftValue": {
+            "leftValue": {
+              "leftValue": {
+                "leftValue": {
+                  "type": "real_number",
+                  "value": 3
+                },
+                "operator": {
+                  "operator": "/",
+                  "precedence": 1,
+                  "type": "binary_operator"
+                },
+                "rightValue": {
+                  "type": "real_number",
+                  "value": 5
+                },
+                "type": "binary_operation"
+              },
+              "operator": {
+                "operator": "*",
+                "precedence": 1,
+                "type": "binary_operator"
+              },
+              "rightValue": {
+                "type": "real_number",
+                "value": 9
+              },
+              "type": "binary_operation"
+            },
+            "operator": {
+              "operator": "+",
+              "precedence": 2,
+              "type": "binary_operator"
+            },
+            "rightValue": {
+              "type": "real_number",
+              "value": 2
+            },
+            "type": "binary_operation"
+          },
+          "operator": {
+            "operator": "-",
+            "precedence": 2,
+            "type": "binary_operator"
+          },
+          "rightValue": {
+            "type": "real_number",
+            "value": 7
+          },
+          "type": "binary_operation"
         }
       };
       expect(exprNode).to.be.deep.equal(expected);

@@ -19,7 +19,7 @@
         "*": [
           "node_modules/*",
           "src/typings/*",
-          "src/parser/*"
+          "src/rs274/*"
         ]
       }
   },

@@ -1,6 +1,7 @@
 import { joinElementText, ifBlankTreeNodeSetNull, isBlankTreeNode, isTreeNode } from './utils';
 
 export enum TokenType {
+  BlockDelete = 'block_delete',
   Line = 'line',
   LineNumber = 'line_number',
   Segment = "segment",
@@ -19,112 +20,76 @@ export enum TokenType {
   Message = "message"
 }
 
-interface Block {
+interface LexerBlock {
   type: TokenType;
   [key: string]: any; // TODO: remove this after debugging
 }
 
-export interface LineBlock extends Block {
-  type: TokenType;
-  blockDelete: any;
+export interface BlockDeleteBlock extends LexerBlock {
+  value: boolean;
+}
+
+export interface LineBlock extends LexerBlock {
+  blockDelete: BlockDeleteBlock;
   lineNumber: LineNumberBlock;
   segments: SegmentBlock[];
 }
 
 export type SegmentBlock = MidlineWordBlock;
 
-export interface LineNumberBlock extends Block {
+export interface LineNumberBlock extends LexerBlock {
   line: number;
 }
 
-export interface MidlineWordBlock extends Block {
+export interface MidlineWordBlock extends LexerBlock {
   code: string;
   value: RealValueBlock;
 }
 
-type RealValueBlock = RealNumberBlock | ExpressionBlock | GetParameterValueBlock | UnaryOperationBlock | BinaryOperationBlock | ArcTangentBlock;
+export type RealValueBlock = RealNumberBlock | ExpressionBlock | GetParameterValueBlock | UnaryOperationBlock | BinaryOperationBlock | ArcTangentBlock;
 
-export interface RealNumberBlock extends Block {
+export interface RealNumberBlock extends LexerBlock {
   value: number;
 }
 
-export interface ExpressionBlock extends Block {
+export interface ExpressionBlock extends LexerBlock {
   value: RealValueBlock;
 }
 
-export interface GetParameterValueBlock extends Block {
+export interface GetParameterValueBlock extends LexerBlock {
   /** Parameter must evaluate to integer from 1-5399. */
   parameter: RealValueBlock;
 }
 
-export interface UnaryOperationBlock extends Block {
+export interface UnaryOperationBlock extends LexerBlock {
   /** Operator: "abs", "acos", "asin", "cos", "exp", "fix", "fup", "ln", "round", "sin", "sqrt", "tan" */
   operator: string;
   expression: ExpressionBlock;
 }
 
-export interface ArcTangentBlock extends Block {
+export interface ArcTangentBlock extends LexerBlock {
   numeratorExpr: ExpressionBlock;
   denominatorExpr: ExpressionBlock;
 }
 
-export interface BinaryOperationBlock extends Block {
+export interface BinaryOperationBlock extends LexerBlock {
   operator: BinaryOperatorBlock;
   leftValue: RealValueBlock;
   rightValue: RealValueBlock;
 }
 
-interface PartialBinaryOperationBlock extends Block {
+interface PartialBinaryOperationBlock extends LexerBlock {
   operator: BinaryOperatorBlock;
   value: RealValueBlock;
 }
 
-export interface BinaryOperatorBlock extends Block {
+export interface BinaryOperatorBlock extends LexerBlock {
   operator: string;
   /** Precedence is 0-2, where 0 is processed before 1, and 1 is processed before 2. */
   precedence: number;
 }
 
-export function make_line (input: string, start: number, end: number, elements: any[]): LineBlock { // eslint-disable-line
-  const [blockDelNode, lineNumNode, segmentNode] = elements.map(ifBlankTreeNodeSetNull);
-  return {
-    type: TokenType.Line,
-    blockDelete: blockDelNode,
-    lineNumber: lineNumNode,
-    segments: segmentNode.elements
-  };
-}
-
-export function make_line_number (input: string, start: number, end: number, elements: any[]): LineNumberBlock { // eslint-disable-line
-  // line_number <- letter_n digit digit? digit? digit? digit?
-  const [, ...digits] = elements;
-  const text = joinElementText(digits);
-  return {
-    type: TokenType.LineNumber,
-    line: Number.parseInt(text)
-  };
-}
-
-export function make_mid_line_word (input: string, start: number, end: number, elements: any[]): MidlineWordBlock { // eslint-disable-line
-  // mid_line_word <- mid_line_letter real_value
-  const [ letterNode, realValueNode ] = elements;
-  return {
-    type: TokenType.MidlineWord,
-    code: letterNode.text,
-    value: realValueNode
-  };
-}
-
-export function make_real_number (input: string, start: number, end: number, elements: any[]): RealNumberBlock { // eslint-disable-line
-  // real_number <- ( "+" / "-" )? ( (digit ( digit )* (".")? ( digit )*) / ("." digit ( digit )*) )
-  const text = joinElementText(elements);
-  return {
-    type: TokenType.RealNumber,
-    value: Number.parseFloat(text)
-  };
-}
-
-function makeBinaryOperator (operator: string): BinaryOperatorBlock {
+function _makeBinaryOperator (operator: string): BinaryOperatorBlock {
   let precedence;
   switch (operator) {
     case "**":
@@ -152,7 +117,7 @@ function makeBinaryOperator (operator: string): BinaryOperatorBlock {
   };
 }
 
-function makeBinaryOperationNode (operator: BinaryOperatorBlock, leftValue: RealValueBlock, rightValue: RealValueBlock): BinaryOperationBlock {
+function _makeBinaryOperationNode (operator: BinaryOperatorBlock, leftValue: RealValueBlock, rightValue: RealValueBlock): BinaryOperationBlock {
   return {
     type: TokenType.BinaryOperation,
     operator,
@@ -161,7 +126,7 @@ function makeBinaryOperationNode (operator: BinaryOperatorBlock, leftValue: Real
   };
 }
 
-function buildExpressionTree (expressionElements: any): any {
+function _buildExpressionTree (expressionElements: any): any {
   const [, lhsRealValue, binOpComboNode ] = expressionElements;
   // get the "binary_operation_combo" objects
   const binOpNodes: any[] = (!binOpComboNode || isBlankTreeNode(binOpComboNode))
@@ -179,7 +144,7 @@ function buildExpressionTree (expressionElements: any): any {
     if (binOpNode.type && binOpNode.type === TokenType.PartialBinaryOperation) {
       const { operator: binOp, value: realValue } = binOpNode as PartialBinaryOperationBlock;
       // Workaround: for some binary operators like "-", it doesn't quite lex correctly and doesn't always make an operator struct.
-      const op = isTreeNode(binOp) ? makeBinaryOperator(binOp.text) : binOp;
+      const op = isTreeNode(binOp) ? _makeBinaryOperator(binOp.text) : binOp;
       values.push(realValue);
       operators.push(op);
       opPrecedences.push(op.precedence);
@@ -205,21 +170,61 @@ function buildExpressionTree (expressionElements: any): any {
     const travIdx = traversalOrder.indexOf(i);
     const op = operators[travIdx];
     const value = values[travIdx];
-    leftNode = makeBinaryOperationNode(op, leftNode, value);
+    leftNode = _makeBinaryOperationNode(op, leftNode, value);
   }
   return leftNode;
 }
 
-export function make_expression (input: string, start: number, end: number, elements: any[]): ExpressionBlock { // eslint-disable-line
+function makeLine (_input: string, _start: number, _end: number, elements: any[]): LineBlock {
+  const [blockDelNode, lineNumNode, segmentNode] = elements.map(ifBlankTreeNodeSetNull);
+  const blockDelete = (!blockDelNode || isBlankTreeNode(blockDelNode)) ? null : { type: TokenType.BlockDelete, value: true };
+  return {
+    type: TokenType.Line,
+    blockDelete,
+    lineNumber: lineNumNode,
+    segments: segmentNode.elements
+  };
+}
+
+function makeLineNumber (_input: string, _start: number, _end: number, elements: any[]): LineNumberBlock {
+  // line_number <- letter_n digit digit? digit? digit? digit?
+  const [, ...digits] = elements;
+  const text = joinElementText(digits);
+  return {
+    type: TokenType.LineNumber,
+    line: Number.parseInt(text)
+  };
+}
+
+function makeMidLineWord (_input: string, _start: number, _end: number, elements: any[]): MidlineWordBlock {
+  // mid_line_word <- mid_line_letter real_value
+  const [ letterNode, realValueNode ] = elements;
+  return {
+    type: TokenType.MidlineWord,
+    code: letterNode.text,
+    value: realValueNode
+  };
+}
+
+function makeRealNumber (_input: string, _start: number, _end: number, elements: any[]): RealNumberBlock {
+  // real_number <- ( "+" / "-" )? ( (digit ( digit )* (".")? ( digit )*) / ("." digit ( digit )*) )
+  const text = joinElementText(elements);
+  return {
+    type: TokenType.RealNumber,
+    value: Number.parseFloat(text)
+  };
+}
+
+function makeExpression (_input: string, _start: number, _end: number, elements: any[]): ExpressionBlock {
   // expression <- "[" real_value ( binary_operation_combo )* "]"
-  const expressionNode = buildExpressionTree(elements);
+  const expressionNode = _buildExpressionTree(elements);
   return {
     type: TokenType.Expression,
     value: expressionNode
   };
 }
 
-export function make_get_parameter_value (input: string, start: number, end: number, elements: any[]): GetParameterValueBlock { // eslint-disable-line
+function makeGetParameterValue (_input: string, _start: number, _end: number, elements: any[]): GetParameterValueBlock {
   // parameter_value <- "#" real_value
   const [, parameterValue ] = elements;
   return {
@@ -228,7 +233,7 @@ export function make_get_parameter_value (input: string, start: number, end: num
   };
 }
 
-export function make_ordinary_unary_combo (input: string, start: number, end: number, elements: any[]): UnaryOperationBlock { // eslint-disable-line
+function makeOrdinaryUnaryCombo (_input: string, _start: number, _end: number, elements: any[]): UnaryOperationBlock {
   // ordinary_unary_combo <- ordinary_unary_operation expression
   const [ operationNode, exprNode ] = elements;
   return {
@@ -238,7 +243,7 @@ export function make_ordinary_unary_combo (input: string, start: number, end: nu
   };
 }
 
-export function make_arc_tangent_combo (input: string, start: number, end: number, elements: any[]): ArcTangentBlock { // eslint-disable-line
+function makeArcTangentCombo (_input: string, _start: number, _end: number, elements: any[]): ArcTangentBlock {
   // arc_tangent_combo <- "atan" expression "/" expression
   const [, exprNode1, , exprNode2 ] = elements;
   return {
@@ -248,7 +253,7 @@ export function make_arc_tangent_combo (input: string, start: number, end: numbe
   };
 }
 
-export function make_binary_operation_combo (input: string, start: number, end: number, elements: any[]): PartialBinaryOperationBlock { // eslint-disable-line
+function makeBinaryOperationCombo (_input: string, _start: number, _end: number, elements: any[]): PartialBinaryOperationBlock {
   // binary_operation_combo <- ( binary_operation1 / binary_operation2 / binary_operation3 ) real_value
   const [ binOpNode, realValueNode ] = elements;
   return {
@@ -258,6 +263,19 @@ export function make_binary_operation_combo (input: string, start: number, end: 
   };
 }
 
-export function make_bin_op (input: string, start: number, end: number, elements: any[]): BinaryOperatorBlock { // eslint-disable-line
-  return makeBinaryOperator(input.substring(start, end));
+function makeBinOp (input: string, start: number, end: number): BinaryOperatorBlock {
+  return _makeBinaryOperator(input.substring(start, end));
 }
+
+export const actions = {
+  makeLine,
+  makeLineNumber,
+  makeMidLineWord,
+  makeRealNumber,
+  makeExpression,
+  makeGetParameterValue,
+  makeOrdinaryUnaryCombo,
+  makeArcTangentCombo,
+  makeBinaryOperationCombo,
+  makeBinOp,
+};
