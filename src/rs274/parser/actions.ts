@@ -15,8 +15,10 @@ import {
   ArcTangentBlock,
   SetParameterValueBlock,
   CommentBlock,
-  MessageBlock
-} from './types';
+  MessageBlock,
+  BlockDeleteBlock
+} from './classes';
+import { TreeNode } from './rs274';
 
 function _makeBinaryOperator (operator: string): BinaryOperatorBlock {
   let precedence;
@@ -39,20 +41,11 @@ function _makeBinaryOperator (operator: string): BinaryOperatorBlock {
     default:
       throw new Error(`Undefined binary operation: "${operator}".`);
   }
-  return {
-    type: TokenType.BinaryOperator,
-    operator,
-    precedence
-  };
+  return new BinaryOperatorBlock(operator, precedence);
 }
 
 function _makeBinaryOperationNode (operator: BinaryOperatorBlock, leftValue: RealValueBlock, rightValue: RealValueBlock): BinaryOperationBlock {
-  return {
-    type: TokenType.BinaryOperation,
-    operator,
-    leftValue,
-    rightValue
-  };
+  return new BinaryOperationBlock(operator, leftValue, rightValue);
 }
 
 function _buildExpressionTree (expressionElements: any): any {
@@ -73,7 +66,7 @@ function _buildExpressionTree (expressionElements: any): any {
     if (binOpNode.type && binOpNode.type === TokenType.PartialBinaryOperation) {
       const { operator: binOp, value: realValue } = binOpNode as PartialBinaryOperationBlock;
       // Workaround: for some binary operators like "-", it doesn't quite lex correctly and doesn't always make an operator struct.
-      const op = isTreeNode(binOp) ? _makeBinaryOperator(binOp.text) : binOp;
+      const op = isTreeNode(binOp) ? _makeBinaryOperator((binOp as any).text) : binOp;
       values.push(realValue);
       operators.push(op);
       opPrecedences.push(op.precedence);
@@ -106,90 +99,58 @@ function _buildExpressionTree (expressionElements: any): any {
 
 function makeLine (_input: string, _start: number, _end: number, elements: any[]): LineBlock {
   const [blockDelNode, lineNumNode, segmentNode] = elements.map(ifBlankTreeNodeSetNull);
-  const blockDelete = (!blockDelNode || isBlankTreeNode(blockDelNode)) ? null : { type: TokenType.BlockDelete, value: true };
-  return {
-    type: TokenType.Line,
-    blockDelete,
-    lineNumber: lineNumNode,
-    segments: segmentNode.elements
-  };
+  const blockDelete = (!blockDelNode || isBlankTreeNode(blockDelNode)) ? null : new BlockDeleteBlock();
+  return new LineBlock(blockDelete, lineNumNode, ...segmentNode.elements);
 }
 
 function makeLineNumber (_input: string, _start: number, _end: number, elements: any[]): LineNumberBlock {
   // line_number <- letter_n digit digit? digit? digit? digit?
   const [, ...digits] = elements;
   const text = joinElementText(digits);
-  return {
-    type: TokenType.LineNumber,
-    line: Number.parseInt(text)
-  };
+  return new LineNumberBlock(Number.parseInt(text));
 }
 
 function makeMidLineWord (_input: string, _start: number, _end: number, elements: any[]): MidlineWordBlock {
   // mid_line_word <- mid_line_letter real_value
   const [ letterNode, realValueNode ] = elements;
-  return {
-    type: TokenType.MidlineWord,
-    code: letterNode.text,
-    value: realValueNode
-  };
+  const code = (letterNode as TreeNode).text.toUpperCase();
+  return new MidlineWordBlock(code, realValueNode);
 }
 
 function makeRealNumber (_input: string, _start: number, _end: number, elements: any[]): RealNumberBlock {
   // real_number <- ( "+" / "-" )? ( (digit ( digit )* (".")? ( digit )*) / ("." digit ( digit )*) )
   const text = joinElementText(elements);
-  return {
-    type: TokenType.RealNumber,
-    value: Number.parseFloat(text)
-  };
+  return new RealNumberBlock(Number.parseFloat(text));
 }
 
 function makeExpression (_input: string, _start: number, _end: number, elements: any[]): ExpressionBlock {
   // expression <- "[" real_value ( binary_operation_combo )* "]"
   const expressionNode = _buildExpressionTree(elements);
-  return {
-    type: TokenType.Expression,
-    value: expressionNode
-  };
+  return new ExpressionBlock(expressionNode);
 }
 
 function makeGetParameterValue (_input: string, _start: number, _end: number, elements: any[]): GetParameterValueBlock {
   // parameter_value <- "#" real_value
   const [, parameterValue ] = elements;
-  return {
-    type: TokenType.GetParameterValue,
-    parameter: parameterValue
-  };
+  return new GetParameterValueBlock(parameterValue);
 }
 
 function makeOrdinaryUnaryCombo (_input: string, _start: number, _end: number, elements: any[]): UnaryOperationBlock {
   // ordinary_unary_combo <- ordinary_unary_operation expression
   const [ operationNode, exprNode ] = elements;
-  return {
-    type: TokenType.OrdinaryUnaryCombo,
-    operator: operationNode.text,
-    expression: exprNode
-  };
+  return new UnaryOperationBlock(operationNode.text, exprNode);
 }
 
 function makeArcTangentCombo (_input: string, _start: number, _end: number, elements: any[]): ArcTangentBlock {
   // arc_tangent_combo <- "atan" expression "/" expression
   const [, exprNode1, , exprNode2 ] = elements;
-  return {
-    type: TokenType.ArcTangentCombo,
-    numeratorExpr: exprNode1,
-    denominatorExpr: exprNode2
-  };
+  return new ArcTangentBlock(exprNode1, exprNode2);
 }
 
 function makeBinaryOperationCombo (_input: string, _start: number, _end: number, elements: any[]): PartialBinaryOperationBlock {
   // binary_operation_combo <- ( binary_operation1 / binary_operation2 / binary_operation3 ) real_value
   const [ binOpNode, realValueNode ] = elements;
-  return {
-    type: TokenType.PartialBinaryOperation,
-    operator: binOpNode,
-    value: realValueNode
-  };
+  return new PartialBinaryOperationBlock(binOpNode, realValueNode);
 }
 
 function makeBinOp (input: string, start: number, end: number): BinaryOperatorBlock {
@@ -198,29 +159,19 @@ function makeBinOp (input: string, start: number, end: number): BinaryOperatorBl
 
 function makeSetParameterValue (_input: string, _start: number, _end: number, elements: any[]): SetParameterValueBlock {
   const [ , paramRealValueNode, , valueRealValueNode ] = elements;
-  return {
-    type: TokenType.SetParameterValue,
-    parameter: paramRealValueNode,
-    value: valueRealValueNode
-  };
+  return new SetParameterValueBlock(paramRealValueNode, valueRealValueNode);
 }
 
 function makeMessage (_input: string, _start: number, _end: number, elements: any[]): MessageBlock {
   const chars = elements.slice(9);
   const text = joinElementText(chars);
-  return {
-    type: TokenType.Message,
-    message: text
-  };
+  return new MessageBlock(text);
 }
 
 function makeComment (_input: string, _start: number, _end: number, elements: any[]): CommentBlock {
   const chars = elements.slice(1, -1);
   const text = joinElementText(chars);
-  return {
-    type: TokenType.Comment,
-    comment: text
-  };
+  return new CommentBlock(text);
 }
 
 export const actions = {

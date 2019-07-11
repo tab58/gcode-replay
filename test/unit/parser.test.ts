@@ -26,7 +26,7 @@ describe('Testing parser actions', (): void => {
     it('should parse pure unary expressions', (): void => {
       const line = 'G3X[ln[cos[3]]]';
       debugger;
-      const parsed: any = parseLine(line);
+      const parsed = parseLine(line);
       const exprNode = parsed.segments[1].value;
       const expected = {
         "type": "expression",
@@ -113,42 +113,5 @@ describe('Testing parser actions', (): void => {
       };
       expect(exprNode).to.be.deep.equal(expected);
     });
-  //   it('should parse parameter settings correctly', (): void => {
-  //     const line = '#3=15';
-  //     const parsed = parse(line, parserActions);
-  //     expect(parsed).to.be.deep.equal({
-  //       "elements": [
-  //         {
-  //           "elements": [],
-  //           "offset": 0,
-  //           "text": "",
-  //         },
-  //         {
-  //           "elements": [],
-  //           "offset": 0,
-  //           "text": "",
-  //         },
-  //         {
-  //           "elements": [
-  //             {
-  //               "code": "3",
-  //               "type": "parameter_setting",
-  //               "value": "15",
-  //             }
-  //           ],
-  //           "offset": 0,
-  //           "text": "#3=15",
-  //         },
-  //         {
-  //           "elements": [],
-  //           "offset": 5,
-  //           "text": "",
-  //         }
-  //       ],
-  //       "offset": 0,
-  //       "text": "#3=15",
-  //       "type": "make_line"
-  //     });
-  //   });
   });
 });
