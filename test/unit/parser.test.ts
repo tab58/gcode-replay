@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 
 import { parseLine } from '../../src/rs274/parser/parser';
+import { ExpressionBlock } from 'parser/classes';
 
 describe('Testing parser actions', (): void => {
   describe('Line Structure', (): void => {
@@ -27,7 +28,7 @@ describe('Testing parser actions', (): void => {
       const line = 'G3X[ln[cos[3]]]';
       debugger;
       const parsed = parseLine(line);
-      const exprNode = parsed.segments[1].value;
+      const exprNode = (parsed.segments[1] as ExpressionBlock).value;
       const expected = {
         "type": "expression",
         "value": {
