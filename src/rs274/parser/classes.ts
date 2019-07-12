@@ -42,24 +42,6 @@ export class BlockDeleteBlock extends LexerBlock {
   }
 }
 
-/**
- * Block representing the syntax tree for a line.
- */
-export class LineBlock extends LexerBlock {
-  public readonly blockDelete: BlockDeleteBlock;
-  public readonly lineNumber: LineNumberBlock;
-  public readonly segments: SegmentBlock[];
-
-  public constructor (blockDelete: BlockDeleteBlock, lineNumber: LineNumberBlock, ...segments: SegmentBlock[]) {
-    super(TokenType.Line);
-    this.blockDelete = blockDelete;
-    this.lineNumber = lineNumber;
-    this.segments = segments;
-  }
-}
-
-export type SegmentBlock = MidlineWordBlock | CommentBlock | SetParameterValueBlock;
-
 export class LineNumberBlock extends LexerBlock {
   public readonly line: number;
 
@@ -68,6 +50,29 @@ export class LineNumberBlock extends LexerBlock {
     this.line = line;
   }
 }
+
+/**
+ * Block representing the syntax tree for a line.
+ */
+export class LineBlock extends LexerBlock {
+  public readonly blockDelete: BlockDeleteBlock;
+  public get lineNumber (): LineNumberBlock { return this._lineNumber; }
+  private _lineNumber: LineNumberBlock;
+  public readonly segments: SegmentBlock[];
+
+  public constructor (blockDelete: BlockDeleteBlock, lineNumber: LineNumberBlock, ...segments: SegmentBlock[]) {
+    super(TokenType.Line);
+    this.blockDelete = blockDelete;
+    this._lineNumber = lineNumber;
+    this.segments = segments;
+  }
+
+  public setLineNumber (lineNumber: number): void {
+    this._lineNumber = new LineNumberBlock(lineNumber);
+  }
+}
+
+export type SegmentBlock = MidlineWordBlock | CommentBlock | SetParameterValueBlock;
 
 export class MidlineWordBlock extends LexerBlock {
   public readonly code: string;
