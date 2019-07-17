@@ -1,0 +1,3 @@
+[submodule "src/gcode-rs274"]
+	path = src/gcode-rs274
+	url = https://github.com/tab58/gcode-rs274

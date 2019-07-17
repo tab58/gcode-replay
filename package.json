@@ -1,18 +1,20 @@
 {
-  "name": "openfbd",
+  "name": "gcode-replay",
   "version": "0.0.1",
-  "description": "Free-body diagram creation tool.",
+  "description": "Video-style scrubber for G-code files.",
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "test": "npm run test:unit",
     "test:unit": "mocha -r ts-node/register test/unit/*.test.ts",
     "trial": "npm start -- ../test/sled-0.25-in.nc",
-    "build:parser": "./node_modules/.bin/canopy ./src/rs274/parser/rs274.peg --lang js",
     "inspect:test:unit": "mocha --inspect-brk -r ts-node/register test/unit/*.test.ts"
   },
   "keywords": [
-    "typescript"
+    "typescript",
+    "gcode",
+    "g-code",
+    "replay"
   ],
   "author": "Tim Bright",
   "license": "MIT",
