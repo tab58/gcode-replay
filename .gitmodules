@@ -1,3 +1,4 @@
-[submodule "src/gcode-rs274"]
-	path = src/gcode-rs274
+[submodule "src/replayer/gcode-rs274"]
+	path = src/replayer/gcode-rs274
 	url = https://github.com/tab58/gcode-rs274
+	branch = master
