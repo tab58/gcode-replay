@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { createReadStream } from 'fs';
 import { createInterface } from 'readline';
 
-import { parse, RS274Interpreter } from './gcode-rs274';
+import { parse, RS274Interpreter } from './replayer/gcode-rs274';
 
 const argv = minimist(process.argv.slice(2));
 const argFilepath = argv._[0];
