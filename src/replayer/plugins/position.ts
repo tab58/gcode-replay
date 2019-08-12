@@ -16,7 +16,7 @@ export class PositionPlugin implements MachineStatePlugin {
 
   public activate (block: CommandBlock): boolean {
     const { command } = block;
-    return positionGCodes.includes(command.code);
+    return positionGCodes.includes(command.value);
   }
 
   public getState (): any {

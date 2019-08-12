@@ -1,0 +1,30 @@
+/* BASICS */
+
+.CodeMirror {
+  /* Set height, width, borders, and global font properties here */
+  font-family: "Inconsolata", monospace !important; 
+  color: rgb(240, 161, 64) !important;
+}
+
+/* GUTTER */
+
+.CodeMirror-gutters {
+  border-right: 1px solid #605D7B !important;
+  background-color: #30243D !important;
+}
+.CodeMirror-linenumber {
+  color: #605D7B !important;
+}
+
+.CodeMirror-cursor {
+  border-left: 1px solid #605D7B !important;
+}
+
+.CodeMirror-activeline-background {background: #605D7B !important;}
+
+/* The rest of this file contains styles related to the mechanics of
+   the editor. You probably shouldn't touch them. */
+
+.CodeMirror {
+  background: #30243D !important;
+}

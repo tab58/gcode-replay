@@ -1,7 +1,13 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  extends: ['plugin:@typescript-eslint/recommended'],
+  plugins: [
+    '@typescript-eslint',
+    'react-hooks'
+  ],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended'
+  ],
   rules: {
     // Spaces always before function parens
     "space-before-function-paren": ["error", "always"],
@@ -26,9 +32,15 @@ module.exports = {
     // Let "any" be explicit
     "@typescript-eslint/no-explicit-any": 0,
 
-    "@typescript-eslint/explicit-function-return-type": 2 //{
+    "@typescript-eslint/explicit-function-return-type": 2, //{
     //   allowExpressions: true
     // }
+
+    "react/jsx-uses-react": "error",
+    "react/jsx-uses-vars": "error",
+
+    "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
+    "react-hooks/exhaustive-deps": "warn" // Checks effect dependencies
   },
   overrides: {
     files: [ "src/**/*.js" ],

@@ -18,16 +18,16 @@
       "paths": {
         "*": [
           "node_modules/*",
-          "src/typings/*",
-          "src/rs274/*"
         ]
       }
   },
   "include": [
     "src/**/*",
     "test/**/*",
+    "viewer.webpack.config.js",
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/replayer/gcode-rs274"
   ]
 }
