@@ -1,4 +1,5 @@
-import { useState, useCallback, useLayoutEffect } from "react";
+import { useState, useCallback, useLayoutEffect } from 'react';
+import { Subject, Observable, Subscription } from 'rxjs';
 
 interface DimensionObject {
   width: number;
@@ -19,6 +20,7 @@ type UseDimensionsHook = [
 
 interface UseDimensionsArgs {
   liveMeasure?: boolean;
+  reactive?: boolean;
 }
 
 function getDimensionObject (node: HTMLElement): DimensionObject {
@@ -36,7 +38,7 @@ function getDimensionObject (node: HTMLElement): DimensionObject {
   };
 }
 
-function useBounds ({
+export function useBounds ({
   liveMeasure = true
 }: UseDimensionsArgs = {}): UseDimensionsHook {
   const [dimensions, setDimensions] = useState({});
@@ -68,5 +70,3 @@ function useBounds ({
 
   return [ref, dimensions, node];
 }
-
-export default useBounds;

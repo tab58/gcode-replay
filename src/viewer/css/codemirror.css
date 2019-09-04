@@ -8,6 +8,8 @@
 
 /* GUTTER */
 
+/* .CodeMirror { height: auto !important; } */
+
 .CodeMirror-gutters {
   border-right: 1px solid #605D7B !important;
   background-color: #30243D !important;
